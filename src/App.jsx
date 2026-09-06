@@ -102,7 +102,12 @@ function TypingApp() {
     ? Math.round(todayRecords.reduce((total, record) => total + (record.wpm || 0), 0) / todayRecords.length)
     : 0
 
-  const formatTime = (milliseconds) => `${(milliseconds / 1000).toFixed(1)}s`
+  const formatTime = (milliseconds) => {
+    const totalSeconds = milliseconds / 1000
+    const minutes = Math.floor(totalSeconds / 60)
+    const seconds = (totalSeconds % 60).toFixed(1)
+    return minutes ? `${minutes} min ${seconds} sec` : `${seconds} sec`
+  }
   const formatRecordDate = (createdAt) => {
     const date = new Date(createdAt)
     return Number.isNaN(date.getTime()) ? 'Unknown date' : date.toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })
