@@ -1,121 +1,63 @@
-import { useState } from 'react'
-import heroImg from './assets/hero.png'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
+import { useEffect, useRef, useState } from 'react'
 import './App.css'
 
+const alphabet = 'abcdefghijklmnopqrstuvwxyz'
+
 function App() {
-  const [count, setCount] = useState(0)
+  const [typed, setTyped] = useState('')
+  const [startedAt, setStartedAt] = useState(null)
+  const [elapsed, setElapsed] = useState(0)
+  const inputRef = useRef(null)
+
+  const isComplete = typed.length === alphabet.length
+  const correct = typed.split('').filter((letter, index) => letter === alphabet[index]).length
+  const accuracy = typed.length ? Math.round((correct / typed.length) * 100) : 100
+  const wpm = elapsed > 0 ? Math.round((correct / 5) / (elapsed / 60000)) : 0
+
+  useEffect(() => {
+    if (!startedAt || isComplete) return undefined
+
+    const timer = window.setInterval(() => setElapsed(Date.now() - startedAt), 100)
+    return () => window.clearInterval(timer)
+  }, [startedAt, isComplete])
+
+  function handleChange(event) {
+    const nextValue = event.target.value.toLowerCase().replace(/[^a-z]/g, '').slice(0, alphabet.length)
+    if (!startedAt && nextValue) setStartedAt(Date.now())
+    setTyped(nextValue)
+    if (nextValue.length === alphabet.length) setElapsed(startedAt ? Date.now() - startedAt : 0)
+  }
+
+  function restart() {
+    setTyped('')
+    setStartedAt(null)
+    setElapsed(0)
+    inputRef.current?.focus()
+  }
+
+  const formatTime = (milliseconds) => `${(milliseconds / 1000).toFixed(1)}s`
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
+    <main className="typing-page">
+      <header className="topbar">
+        <a className="brand" href="/" aria-label="Type home"><span className="brand-mark">T</span><span>Type Training</span></a>
+        <span className="session-label">SPEED SESSION / 01</span>
+      </header>
+      <section className="practice-area" aria-labelledby="page-title">
+        <div className="intro"><p className="eyebrow">A — Z / BEGINNER DRILL</p><h1 id="page-title">Find your flow.</h1><p className="lede">Type the alphabet as quickly and accurately as you can.</p></div>
+        <div className="test-panel">
+          <div className="test-header"><span className="test-status">{isComplete ? 'Round complete' : startedAt ? 'In progress' : 'Ready when you are'}</span><span className="test-count">{typed.length.toString().padStart(2, '0')} / 26</span></div>
+          <div className="alphabet-display" aria-label="Alphabet typing progress">
+            {alphabet.split('').map((letter, index) => { const state = index < typed.length ? (typed[index] === letter ? 'correct' : 'incorrect') : index === typed.length ? 'current' : ''; return <span className={state} key={letter}>{letter}</span> })}
+          </div>
+          <label className="typing-input-label" htmlFor="typing-input">Your typing</label>
+          <input ref={inputRef} id="typing-input" className="typing-input" value={typed} onChange={handleChange} autoComplete="off" autoCapitalize="none" spellCheck="false" placeholder="Start typing here..." disabled={isComplete} autoFocus />
+          <div className="metrics" aria-live="polite"><div className="metric"><span>TIME</span><strong>{formatTime(elapsed)}</strong></div><div className="metric"><span>ACCURACY</span><strong>{accuracy}%</strong></div><div className="metric"><span>WPM</span><strong>{wpm}</strong></div></div>
         </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
+        <button className="restart-button" type="button" onClick={restart}><span aria-hidden="true">↻</span> Restart test</button>
       </section>
-
-      <div className="ticks"></div>
-
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
+      <footer className="page-footer"><span>Keep your eyes on the letters.</span><span className="footer-dot" aria-hidden="true">●</span><span>Small steps, faster hands.</span></footer>
+    </main>
   )
 }
 
