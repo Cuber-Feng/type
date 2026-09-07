@@ -287,14 +287,19 @@ h1 {
   font: 700 12px/1 var(--mono);
 }
 
-.restart-button span {
+.restart-button:hover span:nth-child(2) {
+  text-decoration: underline;
+}
+
+.restart-button span:nth-child(1) {
   color: var(--coral);
   font-size: 19px;
   transition: transform 200ms ease;
 }
 
-.restart-button:hover span {
+.restart-button:hover span:nth-child(1) {
   transform: rotate(-45deg);
+  text-decoration: none;
 }
 
 .records-section {
